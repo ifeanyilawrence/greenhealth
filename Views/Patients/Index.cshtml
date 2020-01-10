@@ -1,0 +1,120 @@
+﻿@model IEnumerable<GreenHealth.Models.Patient>
+@using GreenHealth.Models
+@{
+
+}
+
+<div class="page-title">
+    <div class="title_left">
+        <h3>Patients</h3>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel">
+            <div class="x_content">
+                @if (User.IsInRole(RoleName.AdministratorRoleName))
+                {
+                    <ul> <li><a href="@Url.Action("Create", "Patients")" class="btn btn-primary btn-xs"><i class="fa fa-edit"></i>Add</a></li></ul>
+                }
+                @foreach (var item in Model)
+                {
+                    <div class="col-md-3 col-sm-3 col-xs-12 profile_left">
+                        <div class="profile_img">
+                            <div id="crop-avatar">
+                                <!-- Current avatar -->
+                                <img class="img-responsive avatar-view" src="~/Content/images/user.png" alt="Avatar" title="Change the avatar">
+                            </div>
+                        </div>
+                        <ul>
+
+                            <li>Patient ID : @item.Token</li>
+                            <li>Name: @item.Name</li>
+                            <li>Phone: @item.Phone</li>
+                            <li>Address: @item.Address</li>
+                            <li>City: @item.CityId</li>
+
+                        </ul>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts
+{
+
+    <script>
+        var popup;
+
+        $(document).ready(function () {
+            var table = $("#patients").DataTable({
+                ajax: {
+                    url: "/api/patients",
+                    dataSrc: ""
+                },
+                columns: [
+                    {
+                        data: "token"
+
+                    },
+                    {
+                        data: "name"
+                    },
+                    {
+                        data: "phone",
+                        render: function (data) {
+                            return data.toString().replace(
+                                /(\d\d\d)(\d\d\d)(\d\d\d\d)/g, '$1-$2-$3');
+                        }
+                    },
+                    {
+                        data: "address"
+                    },
+                    {
+                        data: "cities.name"
+                    },
+                    {
+                        data: "id",
+                        render: function (data, type, patient) {
+                            return "<a href='/patients/details/ " + patient.id + "' class='btn btn-default btn-xs'>" + "<i class='fa fa-folder'></i>View</a>" +
+                                //"<button class= 'btn-link js-detail' data-detail-id=" + data + "><i class='fa fa-pencil-square'></i></button>" +
+                                "<button class= 'btn btn-danger btn-xs js-delete' data-patient-id=" + data + "><i class='fa fa-trash-o'></i>Delete</button>";
+                        }
+                    }
+
+                ]
+            });
+
+
+
+
+
+            $("#patients").on("click", ".js-delete", function () {
+                var button = $(this);
+
+                bootbox.confirm("Are you sure to delete this patient?", function (result) {
+                    if (result) {
+                        $.ajax({
+                            url: "/api/patients/" + button.attr("data-patient-id"),
+                            method: "DELETE",
+                            success: function () {
+                                table.row(button.parents("tr")).remove().draw();
+                            }
+                        });
+                    }
+                });
+            });
+
+
+
+
+        });
+
+    </script>
+}
+
+
+
